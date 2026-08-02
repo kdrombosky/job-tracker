@@ -112,6 +112,12 @@ button {
   padding: 28px 24px 80px;
 }
 
+@media (max-width: 480px) {
+  .wrap {
+    padding: 16px 12px 60px;
+  }
+}
+
 .top {
   display: flex;
   align-items: center;
@@ -137,6 +143,16 @@ button {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .actions-row {
+    width: 100%;
+  }
+
+  .actions-row .btn {
+    flex: 1;
+  }
 }
 
 .btn-ghost {
@@ -272,11 +288,16 @@ button {
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  overflow: hidden;
+  /* This is the actual mobile fix: instead of columns squishing down to
+     unreadable widths on a narrow screen, the table keeps its natural
+     width and this container scrolls horizontally instead. */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
+  min-width: 880px; /* forces scroll instead of illegible column-squishing below this */
   border-collapse: collapse;
   font-size: 13.2px;
 }
@@ -292,6 +313,32 @@ thead th {
   letter-spacing: 0.03em;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
+}
+
+/* Sticky first identifying column (Company / Position) so you always know
+   which row you're looking at while scrolled right to see status/dates/
+   actions. The star-toggle column ahead of it is deliberately left
+   non-sticky and just scrolls away — keeping two columns pinned would need
+   a hardcoded pixel offset for the second one, which is fragile against
+   any future width changes. Needs an opaque background (matching each
+   context: default vs. header vs. row-hover) since sticky elements show
+   whatever's behind them through otherwise. */
+thead th:nth-child(2) {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #fafbfe;
+}
+
+.company-cell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--card);
+}
+
+tbody tr:hover .company-cell {
+  background: #fafbff;
 }
 
 tbody td {
@@ -434,6 +481,15 @@ tbody tr:last-child td {
 
 .form-grid .full {
   grid-column: 1 / -1;
+}
+
+/* This is the actual fix for the earlier "text off screen in modals"
+   report: two fixed columns on a narrow phone left each field only ~140px
+   wide, cramping labels/inputs. Stack to one column instead. */
+@media (max-width: 560px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .field label {
