@@ -1,0 +1,14 @@
+# Local dev. Both services point at Neon (a dev branch, ideally — see
+# backend/.env.example) rather than running Postgres in a container here,
+# since Neon's free tier is always reachable and this keeps local dev and
+# prod on the identical DB engine with zero extra moving parts.
+#
+# NOTE: only `backend` exists so far. `frontend` service gets added once
+# the React app + its Dockerfile exist.
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
