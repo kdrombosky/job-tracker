@@ -1,0 +1,14 @@
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # $uri here is nginx's own built-in variable, not an env var — the
+    # official nginx image's envsubst step only substitutes names it knows
+    # are actual environment variables (like $PORT above), so this is safe
+    # from being mangled.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
