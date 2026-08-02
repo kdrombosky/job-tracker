@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { listJobs, deleteJob, updateJob, downloadCsv, AuthError } from "../api.js";
+import { listJobs, createJob, deleteJob, updateJob, downloadCsv, AuthError } from "../api.js";
 import Toolbar from "./Toolbar.jsx";
 import JobsTable from "./JobsTable.jsx";
+import JobModal from "./JobModal.jsx";
 
 const DEFAULT_FILTERS = {
   search: "",
@@ -17,6 +18,8 @@ export default function Dashboard({ onLoggedOut }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -80,8 +83,34 @@ export default function Dashboard({ onLoggedOut }) {
   }
 
   function handleEdit(job) {
-    // TODO: wire up once the add/edit modal exists (next piece).
-    console.log("edit", job);
+    setEditingJob(job); // null => "add" mode, a job object => "edit" mode
+    setModalOpen(true);
+  }
+
+  function handleCloseModal() {
+    setModalOpen(false);
+    setEditingJob(null);
+  }
+
+  async function handleSaveJob(payload, id) {
+    try {
+      if (id) {
+        await updateJob(id, payload);
+      } else {
+        await createJob(payload);
+      }
+      handleCloseModal();
+      loadJobs();
+      loadIndustries();
+    } catch (err) {
+      if (err instanceof AuthError) {
+        onLoggedOut();
+        return;
+      }
+      // Re-thrown so JobModal's own try/catch shows the error inline
+      // and keeps the modal open, instead of losing the user's input.
+      throw err;
+    }
   }
 
   return (
@@ -111,6 +140,8 @@ export default function Dashboard({ onLoggedOut }) {
         onDelete={handleDelete}
         onTogglePreferred={handleTogglePreferred}
       />
+
+      {modalOpen && <JobModal job={editingJob} onSave={handleSaveJob} onClose={handleCloseModal} />}
     </div>
   );
 }
