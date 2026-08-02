@@ -29,4 +29,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend
-        run: pytest -v
+        # python -m pytest (not bare `pytest`) also adds the cwd to
+        # sys.path, as a second, independent fix for the same import issue
+        # pytest.ini's `pythonpath = .` already solves.
+        run: python -m pytest -v
