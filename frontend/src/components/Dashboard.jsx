@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { listJobs, createJob, deleteJob, updateJob, downloadCsv, AuthError } from "../api.js";
+import StatsCards from "./StatsCards.jsx";
+import Charts from "./Charts.jsx";
 import Toolbar from "./Toolbar.jsx";
 import JobsTable from "./JobsTable.jsx";
 import JobModal from "./JobModal.jsx";
@@ -14,7 +16,7 @@ const DEFAULT_FILTERS = {
 
 export default function Dashboard({ onLoggedOut }) {
   const [jobs, setJobs] = useState([]);
-  const [industries, setIndustries] = useState([]);
+  const [allJobs, setAllJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -35,16 +37,18 @@ export default function Dashboard({ onLoggedOut }) {
     }
   }, [filters, onLoggedOut]);
 
-  // Deliberately unfiltered — see explanation in chat: this feeds the
-  // industry dropdown, which should always list every industry you've
-  // ever used, independent of whatever status/search filter is active.
-  const loadIndustries = useCallback(async () => {
+  // Deliberately unfiltered — feeds the industry dropdown, the stats
+  // cards, and the charts, all of which should describe your whole job
+  // search regardless of whatever filter is currently applied to the
+  // table. Filtering the table to "Rejected" shouldn't make "Total
+  // applications" or the status chart suddenly reflect only rejections.
+  const loadAllJobs = useCallback(async () => {
     try {
       const all = await listJobs({});
-      setIndustries(Array.from(new Set(all.map((j) => j.industry).filter(Boolean))).sort());
+      setAllJobs(all);
     } catch (err) {
       if (err instanceof AuthError) onLoggedOut();
-      // otherwise non-critical — leave the dropdown as it was
+      // otherwise non-critical — stats/charts/dropdown just stay stale
     }
   }, [onLoggedOut]);
 
@@ -53,8 +57,13 @@ export default function Dashboard({ onLoggedOut }) {
   }, [loadJobs]);
 
   useEffect(() => {
-    loadIndustries();
-  }, [loadIndustries]);
+    loadAllJobs();
+  }, [loadAllJobs]);
+
+  const industries = useMemo(
+    () => Array.from(new Set(allJobs.map((j) => j.industry).filter(Boolean))).sort(),
+    [allJobs]
+  );
 
   function handleFilterChange(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -64,6 +73,7 @@ export default function Dashboard({ onLoggedOut }) {
     try {
       await updateJob(job.id, { preferred: !job.preferred });
       loadJobs();
+      loadAllJobs(); // "Preferred jobs" stat card needs to reflect this too
     } catch (err) {
       if (err instanceof AuthError) return onLoggedOut();
       setError(err.message);
@@ -75,7 +85,7 @@ export default function Dashboard({ onLoggedOut }) {
     try {
       await deleteJob(job.id);
       loadJobs();
-      loadIndustries();
+      loadAllJobs();
     } catch (err) {
       if (err instanceof AuthError) return onLoggedOut();
       setError(err.message);
@@ -101,7 +111,7 @@ export default function Dashboard({ onLoggedOut }) {
       }
       handleCloseModal();
       loadJobs();
-      loadIndustries();
+      loadAllJobs();
     } catch (err) {
       if (err instanceof AuthError) {
         onLoggedOut();
@@ -129,6 +139,9 @@ export default function Dashboard({ onLoggedOut }) {
           </button>
         </div>
       </header>
+
+      <StatsCards jobs={allJobs} />
+      <Charts jobs={allJobs} />
 
       <Toolbar filters={filters} onChange={handleFilterChange} industries={industries} />
 

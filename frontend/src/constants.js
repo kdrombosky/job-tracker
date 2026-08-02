@@ -21,6 +21,8 @@ export const STATUS_COLORS = {
   Withdrawn: { bg: "#eef0f4", fg: "#8a8f9e" },
 };
 
+export const TERMINAL_STATUSES = ["Accepted", "Rejected", "Withdrawn"];
+
 export const SORT_OPTIONS = [
   { value: "date_last_updated_desc", label: "Last updated (newest)" },
   { value: "date_last_updated_asc", label: "Last updated (oldest)" },
