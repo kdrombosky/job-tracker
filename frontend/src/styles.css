@@ -408,9 +408,32 @@ tbody tr:last-child td {
   font-weight: 700;
 }
 
-.stale {
-  color: var(--red);
-  font-weight: 700;
+/* Stale applications (14+ days since last update, non-terminal status
+   only — see JobOut.is_stale). Uniform opacity on the whole row (rather
+   than hand-picking a text color per cell) dims everything together —
+   badge, icons, text — for a deeper, more consistent "faded/dormant"
+   look than a single muted text color gave. Restored to full opacity on
+   hover so it's still easy to work with when you're actually on the row. */
+.row-stale {
+  opacity: 0.45;
+}
+
+.row-stale:hover {
+  opacity: 0.85;
+}
+
+/* Small inline marker next to the company name — a second, always-visible
+   cue that doesn't depend on noticing the row is dimmed (e.g. at a glance
+   on mobile, or for anyone who has trouble distinguishing the opacity
+   difference). Native title attribute for the tooltip is deliberate here
+   instead of the portal-based NotesTooltip: it's simple text, not
+   multi-line note content, and the browser's own tooltip isn't subject
+   to the table's clipping issues either way. */
+.stale-icon {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 12px;
+  cursor: help;
 }
 
 .muted {

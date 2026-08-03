@@ -48,7 +48,7 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
           {jobs.map((job) => {
             const colors = STATUS_COLORS[job.status] || STATUS_COLORS.Applied;
             return (
-              <tr key={job.id}>
+              <tr key={job.id} className={job.is_stale ? "row-stale" : ""}>
                 <td>
                   <span
                     className={`star ${job.preferred ? "on" : ""}`}
@@ -59,7 +59,17 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
                   </span>
                 </td>
                 <td className="company-cell">
-                  <div className="name">{job.company}</div>
+                  <div className="name">
+                    {job.company}
+                    {job.is_stale && (
+                      <span
+                        className="stale-icon"
+                        title={`Stale — no update in ${fmtDays(job.days_since_update)}`}
+                      >
+                        💤
+                      </span>
+                    )}
+                  </div>
                   <div className="pos">{job.position}</div>
                 </td>
                 <td>{job.industry || "—"}</td>
@@ -71,7 +81,7 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
                 </td>
                 <td>{fmtDate(job.date_applied)}</td>
                 <td>{fmtDate(job.date_last_updated)}</td>
-                <td className={job.is_stale ? "stale" : "muted"}>{fmtDays(job.days_since_update)}</td>
+                <td className="muted">{fmtDays(job.days_since_update)}</td>
                 <td className="muted">{fmtDays(job.total_days)}</td>
                 <td className="muted">{job.source || "—"}</td>
                 <td className="notes-cell">
