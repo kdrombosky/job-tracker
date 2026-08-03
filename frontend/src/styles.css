@@ -244,6 +244,21 @@ button {
   height: 230px;
 }
 
+/* Pipeline flow diagram (see PipelineFlow.jsx) — plain SVG, scaled to
+   fill the card via viewBox rather than a fixed pixel size, same as the
+   canvas-based charts next to it. */
+.flow-svg {
+  width: 100%;
+  height: 260px;
+}
+
+.flow-source-label,
+.flow-target-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
 /* ---------- toolbar ---------- */
 
 .toolbar {

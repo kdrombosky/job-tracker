@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { listJobs, createJob, deleteJob, updateJob, downloadCsv, AuthError } from "../api.js";
 import StatsCards from "./StatsCards.jsx";
 import Charts from "./Charts.jsx";
+import PipelineFlow from "./PipelineFlow.jsx";
+import TimeInStage from "./TimeInStage.jsx";
 import Toolbar from "./Toolbar.jsx";
 import JobsTable from "./JobsTable.jsx";
 import JobModal from "./JobModal.jsx";
@@ -155,6 +157,10 @@ export default function Dashboard({ onLoggedOut }) {
 
       <StatsCards jobs={allJobs} />
       <Charts jobs={allJobs} />
+      <div className="charts-grid">
+        <PipelineFlow jobs={allJobs} />
+        <TimeInStage jobs={allJobs} />
+      </div>
 
       <Toolbar filters={filters} onChange={handleFilterChange} industries={industries} />
 
