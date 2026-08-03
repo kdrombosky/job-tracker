@@ -32,3 +32,8 @@ export function fmtDays(n) {
   if (n === 1) return "1 day";
   return `${n} days`;
 }
+
+export function truncate(text, max = 80) {
+  if (!text) return "";
+  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}

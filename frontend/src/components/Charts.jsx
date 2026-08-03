@@ -86,6 +86,12 @@ export default function Charts({ jobs }) {
             tension: 0.3,
             pointRadius: 3,
             order: 1,
+            // This is the actual fix: cumulative totals climb much higher
+            // than any single month's count, so sharing one axis with the
+            // bars squashed them flat near zero to make room for the
+            // line's range. Its own axis lets each dataset use its full
+            // natural scale instead of fighting over one.
+            yAxisID: "y1",
           },
         ],
       },
@@ -94,7 +100,20 @@ export default function Charts({ jobs }) {
         maintainAspectRatio: false,
         plugins: { legend: { display: true, position: "top", labels: { boxWidth: 12, font: { size: 11 } } } },
         scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } },
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 },
+            title: { display: true, text: "Per month", font: { size: 10 } },
+          },
+          y1: {
+            beginAtZero: true,
+            position: "right",
+            ticks: { precision: 0 },
+            // Only the left axis draws gridlines — two overlapping grids
+            // at different scales is its own kind of visual mess.
+            grid: { drawOnChartArea: false },
+            title: { display: true, text: "Cumulative", font: { size: 10 } },
+          },
           x: { grid: { display: false } },
         },
       },

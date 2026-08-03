@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { STATUS_COLORS } from "../constants.js";
-import { fmtDate, fmtSalary, fmtDays } from "../utils.js";
+import { fmtDate, fmtSalary, fmtDays, truncate } from "../utils.js";
+import NotesTooltip from "./NotesTooltip.jsx";
 
 export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTogglePreferred }) {
+  const [viewingNotesFor, setViewingNotesFor] = useState(null);
+
   if (loading) {
     return <div className="table-card"><div className="empty-state">Loading…</div></div>;
   }
@@ -36,6 +40,7 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
             <th>Since update</th>
             <th>Total time</th>
             <th>Source</th>
+            <th>Notes</th>
             <th></th>
           </tr>
         </thead>
@@ -69,6 +74,16 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
                 <td className={job.is_stale ? "stale" : "muted"}>{fmtDays(job.days_since_update)}</td>
                 <td className="muted">{fmtDays(job.total_days)}</td>
                 <td className="muted">{job.source || "—"}</td>
+                <td className="notes-cell">
+                  {job.notes ? (
+                    <NotesTooltip
+                      preview={truncate(job.notes, 80)}
+                      onClick={() => setViewingNotesFor(job)}
+                    />
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
+                </td>
                 <td>
                   <div className="row-actions">
                     <button className="icon-btn" title="Edit" onClick={() => onEdit(job)}>
@@ -84,6 +99,21 @@ export default function JobsTable({ jobs, loading, error, onEdit, onDelete, onTo
           })}
         </tbody>
       </table>
+      {viewingNotesFor && (
+        <div className="modal-overlay" onClick={() => setViewingNotesFor(null)}>
+          <div className="modal notes-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>
+                {viewingNotesFor.company} — {viewingNotesFor.position}
+              </h2>
+              <button onClick={() => setViewingNotesFor(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="notes-full-text">{viewingNotesFor.notes}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
