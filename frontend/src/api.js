@@ -1,4 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL;
+// Strips any trailing slash(es) regardless of how VITE_API_URL was entered
+// (e.g. "https://x.onrender.com/") — every call site below concatenates a
+// leading "/api/...", so a trailing slash here produces "//api/..." and
+// FastAPI's router 404s on it, since that's a different path than "/api/...".
+const API_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 const TOKEN_KEY = "job_tracker_token";
 
 export function getToken() {

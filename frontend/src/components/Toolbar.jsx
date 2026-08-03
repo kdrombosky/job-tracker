@@ -12,7 +12,10 @@ export default function Toolbar({ filters, onChange, industries }) {
 
       <select value={filters.status_filter} onChange={(e) => onChange("status_filter", e.target.value)}>
         <option value="">All statuses</option>
-        {STATUS_ORDER.map((s) => (
+        {/* Rejected is excluded here on purpose — rejected jobs live in
+            their own hideable section below the main table now, so
+            filtering the main table to Rejected would always show nothing. */}
+        {STATUS_ORDER.filter((s) => s !== "Rejected").map((s) => (
           <option key={s} value={s}>
             {s}
           </option>

@@ -22,6 +22,7 @@ export default function Dashboard({ onLoggedOut }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
+  const [showRejected, setShowRejected] = useState(false);
 
   const loadJobs = useCallback(async () => {
     setLoading(true);
@@ -64,6 +65,18 @@ export default function Dashboard({ onLoggedOut }) {
     () => Array.from(new Set(allJobs.map((j) => j.industry).filter(Boolean))).sort(),
     [allJobs]
   );
+
+  // Rejected apps get pulled out of the main table entirely and shown in
+  // their own hideable section below instead — the main table is for
+  // stuff that's still active-ish, not a graveyard of dead ends. Filtered
+  // client-side rather than via the backend's status_filter param, since
+  // "everything except Rejected" doesn't map onto that single-value filter.
+  const mainJobs = useMemo(() => jobs.filter((j) => j.status !== "Rejected"), [jobs]);
+
+  // Pulled from allJobs (unfiltered), not mainJobs/jobs, so the rejected
+  // list is always complete regardless of whatever search/status/industry
+  // filter is currently set in the main toolbar.
+  const rejectedJobs = useMemo(() => allJobs.filter((j) => j.status === "Rejected"), [allJobs]);
 
   function handleFilterChange(key, value) {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -146,13 +159,30 @@ export default function Dashboard({ onLoggedOut }) {
       <Toolbar filters={filters} onChange={handleFilterChange} industries={industries} />
 
       <JobsTable
-        jobs={jobs}
+        jobs={mainJobs}
         loading={loading}
         error={error}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onTogglePreferred={handleTogglePreferred}
       />
+
+      <div className="rejected-section">
+        <button className="rejected-toggle" onClick={() => setShowRejected((v) => !v)}>
+          <span>{showRejected ? "▾" : "▸"}</span>
+          Rejected applications ({rejectedJobs.length})
+        </button>
+        {showRejected && (
+          <JobsTable
+            jobs={rejectedJobs}
+            loading={false}
+            error=""
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onTogglePreferred={handleTogglePreferred}
+          />
+        )}
+      </div>
 
       {modalOpen && <JobModal job={editingJob} onSave={handleSaveJob} onClose={handleCloseModal} />}
     </div>
